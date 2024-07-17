@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FastAPI HTMX Example</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <style>
+        .container { max-width: 80%; margin: auto; }
+        button, input[type="submit"] {
+            background-color: #3490dc;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form id="message-form"
+              hx-post="https://data.lithings.com/post-text-msg/"
+              hx-trigger="submit"
+              hx-target="#message-result"
+              hx-swap="innerHTML"
+              hx-headers='{"Content-Type": "application/json"}'
+              hx-ext="json-enc">
+            <input type="number" name="receiver" placeholder="Receiver" class="border p-2 mb-2" required/>
+            <input type="text" name="text_msg" placeholder="Enter your message here..." class="border p-2 mb-2" required/>
+            <button type="submit">Submit Message</button>
+        </form>
+        <div id="message-result"></div>
+        
+        <button hx-get="https://data.lithings.com/all-messages/"
+                hx-target="#messages-table"
+                hx-swap="innerHTML">
+            Fetch Messages
+        </button>
+        
+        <div id="messages-table"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            htmx.defineExtension('json-enc', {
+                onEvent: function (name, evt) {
+                    if (name === 'htmx:configRequest') {
+                        evt.detail.headers['Content-Type'] = 'application/json';
+                    }
+                },
+                encodeParameters: function (xhr, parameters, elt) {
+                    xhr.overrideMimeType('application/json');
+                    // Convert 'receiver' to an integer
+                    parameters.receiver = parseInt(parameters.receiver, 10);
+                    return JSON.stringify(parameters);
+                }
+            });
+        
+            // Error handling
+            htmx.on("htmx:responseError", function(event) {
+                console.log("Error response:", event.detail.xhr.responseText);
+                alert("An error occurred. Check the console for details.");
+            });
+        
+            // Clear form and result on successful submission
+            htmx.on("htmx:afterOnLoad", function(event) {
+                if (event.detail.successful) {
+                    document.getElementById('message-form').reset();
+                }
+            });
+        });
+        </script>
+</body>
+</html>

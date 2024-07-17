@@ -1,0 +1,32 @@
+-- Create the 'lithings' schema
+CREATE SCHEMA IF NOT EXISTS lithings;
+
+-- Create the 'msgs' table in the 'lithings' schema
+CREATE TABLE lithings.msgs (
+    id integer NOT NULL,
+    created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sender smallint,
+    receiver smallint,
+    msg smallint,
+    text_msg character varying(255),
+    latitude double precision,
+    longitude double precision,
+    delivered boolean,
+    seen boolean
+);
+
+-- Add primary key constraint
+ALTER TABLE lithings.msgs
+    ADD CONSTRAINT msgs_pkey PRIMARY KEY (id);
+
+-- Create a sequence for the id column
+CREATE SEQUENCE lithings.msgs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+-- Set the id column to use the sequence by default
+ALTER TABLE lithings.msgs
+    ALTER COLUMN id SET DEFAULT nextval('lithings.msgs_id_seq'::regclass);
